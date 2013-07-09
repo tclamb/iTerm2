@@ -3538,16 +3538,12 @@ static VT100TCC decode_string(unsigned char *datap,
                             FG_COLORMODE = ColorModeNormal;
                             i += 2;
                         } else if (token.u.csi.count - i >= 5 && token.u.csi.p[i + 1] == 2) {
-                            // 24-bit color support
-                            // approximated by 18-bit colors
-                            // FG_COLORCODE's high 6 bits are red,
-                            // its low 2 bits the high 2 bits of green,
-                            // FG_GREEN is the low four bits of green,
-                            // and FG_BLUE is the 6 bits of blue
-                            FG_COLORCODE = token.u.csi.p[i + 2] & 0x3C |
-                                token.u.csi.p[i + 3] >> 4;
-                            FG_GREEN = token.u.csi.p[i + 3] & 0xF;
-                            FG_BLUE = token.u.csi.p[i + 4];
+                            // approximating 24-bit color with 18-bit color
+                            // see ScreenChar.h for packing
+                            FG_COLORCODE = (token.u.csi.p[i + 2] & 0xFC) |
+                                (token.u.csi.p[i + 3] >> 6);
+                            FG_GREEN = (token.u.csi.p[i + 3] >> 2) & 0xF;
+                            FG_BLUE = token.u.csi.p[i + 4] >> 2;
                             FG_COLORMODE = ColorMode24bit;
                             i += 4;
                         }
@@ -3558,13 +3554,12 @@ static VT100TCC decode_string(unsigned char *datap,
                             BG_COLORMODE = ColorModeNormal;
                             i += 2;
                         } else if (token.u.csi.count - i >= 5 && token.u.csi.p[i + 1] == 2) {
-                            // 24-bit color support
-                            // approximated by 18-bit colors
-                            // see above comment
-                            BG_COLORCODE = token.u.csi.p[i + 2] & 0x3C |
-                                token.u.csi.p[i + 3] >> 4;
-                            BG_GREEN = token.u.csi.p[i + 3] & 0xF;
-                            BG_BLUE = token.u.csi.p[i + 4];
+                            // approximating 24-bit color with 18-bit color
+                            // see ScreenChar.h for packing
+                            BG_COLORCODE = (token.u.csi.p[i + 2] & 0xFC) |
+                                (token.u.csi.p[i + 3] >> 6);
+                            BG_GREEN = (token.u.csi.p[i + 3] >> 2) & 0xF;
+                            BG_BLUE = token.u.csi.p[i + 4] >> 2;
                             BG_COLORMODE = ColorMode24bit;
                             i += 4;
                         }

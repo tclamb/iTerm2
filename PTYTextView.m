@@ -864,21 +864,21 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
 
 - (NSColor *)foregroundColorForChar:(screen_char_t)sct
 {
-    int red   = sct.foregroundColor >> 2,
-        green = sct.foregroundColor & 0x3 << 4 | sct.fgGreen;
-    return [NSColor colorWithCalibratedRed:red/63.0
-                                     green:green/63.0
+    // approximating 24-bit color with 18-bit color
+    // see ScreenChar.h for packing
+    return [NSColor colorWithCalibratedRed:(sct.foregroundColor >> 2)/63.0
+                                     green:(((sct.foregroundColor & 0x3) << 4) | sct.fgGreen)/63.0
                                       blue:sct.fgBlue/63.0
                                      alpha:1];
 }
 
 - (NSColor *)backgroundColorForChar:(screen_char_t)sct
 {
-    int red   = sct.backgroundColor >> 2,
-        green = sct.backgroundColor & 0x3 << 4 | sct.bgGreen;
-    return [NSColor colorWithCalibratedRed:red/55.0
-                                     green:green/55.0
-                                      blue:sct.bgBlue/55.0
+    // approximating 24-bit color with 18-bit color
+    // see ScreenChar.h for packing
+    return [NSColor colorWithCalibratedRed:(sct.backgroundColor >> 2)/63.0
+                                     green:(((sct.backgroundColor & 0x3) << 4) | sct.bgGreen)/63.0
+                                      blue:sct.bgBlue/63.0
                                      alpha:1];
 }
 
@@ -6718,12 +6718,11 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                                                    bold:NO
                                            isBackground:(bgColor == ALTSEM_BG_DEFAULT)];
                         } else {
-                            // have to unpack 18-bit color values
-                            int red = bgColor >> 2;
-                            int green = bgColor & 0x3 << 4 | bgGreen;
-                            aColor = [NSColor colorWithCalibratedRed:red/63.0
-                                                               green:green/63.0
-                                                                blue:bgBlue /63.0
+                            // approximating 24-bit color with 18-bit color
+                            // see ScreenChar.h for packing
+                            aColor = [NSColor colorWithCalibratedRed:(bgColor >> 2)/63.0
+                                                               green:(((bgColor & 0x3) << 4) | bgGreen)/63.0
+                                                                blue:bgBlue/63.0
                                                                alpha:1];
                         }
                     }
