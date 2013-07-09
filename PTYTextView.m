@@ -864,17 +864,21 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
 
 - (NSColor *)foregroundColorForChar:(screen_char_t)sct
 {
-    return [NSColor colorWithCalibratedRed:sct.foregroundColor/255.0
-                                     green:sct.fgGreen/255.0
-                                      blue:sct.fgBlue /255.0
+    int red   = sct.foregroundColor >> 2,
+        green = sct.foregroundColor & 0x3 << 4 | sct.fgGreen;
+    return [NSColor colorWithCalibratedRed:red/63.0
+                                     green:green/63.0
+                                      blue:sct.fgBlue/63.0
                                      alpha:1];
 }
 
 - (NSColor *)backgroundColorForChar:(screen_char_t)sct
 {
-    return [NSColor colorWithCalibratedRed:sct.backgroundColor/255.0
-                                     green:sct.bgGreen/255.0
-                                      blue:sct.bgBlue /255.0
+    int red   = sct.backgroundColor >> 2,
+        green = sct.backgroundColor & 0x3 << 4 | sct.bgGreen;
+    return [NSColor colorWithCalibratedRed:red/55.0
+                                     green:green/55.0
+                                      blue:sct.bgBlue/55.0
                                      alpha:1];
 }
 
@@ -6714,9 +6718,12 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                                                    bold:NO
                                            isBackground:(bgColor == ALTSEM_BG_DEFAULT)];
                         } else {
-                            aColor = [NSColor colorWithCalibratedRed:bgColor/255.0
-                                                               green:bgGreen/255.0
-                                                                blue:bgBlue /255.0
+                            // have to unpack 18-bit color values
+                            int red = bgColor >> 2;
+                            int green = bgColor & 0x3 << 4 | bgGreen;
+                            aColor = [NSColor colorWithCalibratedRed:red/63.0
+                                                               green:green/63.0
+                                                                blue:bgBlue /63.0
                                                                alpha:1];
                         }
                     }

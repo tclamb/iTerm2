@@ -112,12 +112,12 @@ typedef struct screen_char_t
     //   ALTSEM_xxx (see comments above)
 
     unsigned int foregroundColor : 8; //contains fgred when fgIs24bit
-    unsigned int fgGreen : 8;
-    unsigned int fgBlue  : 8;
+    unsigned int fgGreen : 4;
+    unsigned int fgBlue  : 6;
 
     unsigned int backgroundColor : 8; //contains bgRed when bgIs24bit
-    unsigned int bgGreen : 8;
-    unsigned int bgBlue  : 8;
+    unsigned int bgGreen : 4;
+    unsigned int bgBlue  : 6;
 
     // These determine the interpretation of {fore,back}groundColor.
     unsigned int foregroundColorMode : 2;
@@ -139,7 +139,7 @@ typedef struct screen_char_t
 
     // These bits aren't used but are defined here so that the entire memory
     // region can be initialized.
-    unsigned int unused : 7;
+    unsigned int unused : 3;
 } screen_char_t;
 
 // Standard unicode replacement string. Is a double-width character.

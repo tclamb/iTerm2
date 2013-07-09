@@ -3539,8 +3539,14 @@ static VT100TCC decode_string(unsigned char *datap,
                             i += 2;
                         } else if (token.u.csi.count - i >= 5 && token.u.csi.p[i + 1] == 2) {
                             // 24-bit color support
-                            FG_COLORCODE = token.u.csi.p[i + 2];
-                            FG_GREEN = token.u.csi.p[i + 3];
+                            // approximated by 18-bit colors
+                            // FG_COLORCODE's high 6 bits are red,
+                            // its low 2 bits the high 2 bits of green,
+                            // FG_GREEN is the low four bits of green,
+                            // and FG_BLUE is the 6 bits of blue
+                            FG_COLORCODE = token.u.csi.p[i + 2] & 0x3C |
+                                token.u.csi.p[i + 3] >> 4;
+                            FG_GREEN = token.u.csi.p[i + 3] & 0xF;
                             FG_BLUE = token.u.csi.p[i + 4];
                             FG_COLORMODE = ColorMode24bit;
                             i += 4;
@@ -3553,8 +3559,11 @@ static VT100TCC decode_string(unsigned char *datap,
                             i += 2;
                         } else if (token.u.csi.count - i >= 5 && token.u.csi.p[i + 1] == 2) {
                             // 24-bit color support
-                            BG_COLORCODE = token.u.csi.p[i + 2];
-                            BG_GREEN = token.u.csi.p[i + 3];
+                            // approximated by 18-bit colors
+                            // see above comment
+                            BG_COLORCODE = token.u.csi.p[i + 2] & 0x3C |
+                                token.u.csi.p[i + 3] >> 4;
+                            BG_GREEN = token.u.csi.p[i + 3] & 0xF;
                             BG_BLUE = token.u.csi.p[i + 4];
                             BG_COLORMODE = ColorMode24bit;
                             i += 4;
