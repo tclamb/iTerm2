@@ -173,6 +173,8 @@ enum {
     // Maps a NSNumber int consisting of color index, alternate fg semantics
     // flag, bold flag, and background flag to NSColor*s.
     NSMutableDictionary* dimmedColorCache_;
+    // Experimentally caching 24-bit colors
+    NSMutableDictionary* rgb24bitColorCache_;
 
     // Dimmed background color with alpha.
     NSColor *cachedBackgroundColor_;

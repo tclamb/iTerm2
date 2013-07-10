@@ -272,6 +272,7 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
     firstMouseEventNumber_ = -1;
 
     dimmedColorCache_ = [[NSMutableDictionary alloc] init];
+    rgb24bitColorCache_ = [[NSMutableDictionary alloc] init];
     [self setMarkedTextAttributes:
         [NSDictionary dictionaryWithObjectsAndKeys:
             defaultBGColor, NSBackgroundColorAttributeName,
@@ -457,6 +458,7 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
 
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [dimmedColorCache_ release];
+    [rgb24bitColorCache_ release];
     [memoizedContrastingColor_ release];
     for (i = 0; i < 256; i++) {
         [colorTable[i] release];
@@ -769,9 +771,21 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
                 }
         }
     } else if (theMode == ColorMode24bit) {
-        color = [self colorFromRGB:theIndex
-                             green:green
-                              blue:blue];
+        // experimentally caching 24-bit colors, could use the performance,
+        // and it feels like there's a memory leak with colors otherwise
+        int key = (((theIndex & 0xff) << 16) |
+                   ((green & 0xff) << 8) |
+                   ((blue & 0xff) << 0));
+        NSNumber *numKey = [NSNumber numberWithInt:key];
+        NSColor *cacheEntry = [rgb24bitColorCache_ objectForKey:numKey];
+        if (cacheEntry) {
+            color = cacheEntry;
+        } else {
+            color = [self colorFromRGB:theIndex
+                                 green:green
+                                  blue:blue];
+            [rgb24bitColorCache_ setObject:color forKey:numKey];
+        }
     } else {
         // Render bold text as bright. The spec (ECMA-48) describes the intense
         // display setting (esc[1m) as "bold or bright". We make it a
@@ -833,17 +847,6 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
                                       colorMode:theMode
                                            bold:isBold];
         return theColor;
-    }
-
-    // 24-bit colors are not cached, as they could increase cache size
-    // nontrivially up to to 2^27
-    if (theMode == ColorMode24bit) {
-        NSColor *theColor = [self _colorForCode:theIndex
-                                          green:green
-                                           blue:blue
-                                      colorMode:theMode
-                                           bold:isBold];
-        return [self _dimmedColorFrom:theColor];
     }
 
     // Dimming is on. See if the dimmed version of the color is cached.
