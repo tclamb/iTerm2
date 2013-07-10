@@ -6796,6 +6796,8 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
 
 - (void)_drawCharacter:(screen_char_t)screenChar
                fgColor:(int)fgColor
+               fgGreen:(int)fgGreen
+                fgBlue:(int)fgBlue
            fgColorMode:(ColorMode)fgColorMode
                 fgBold:(BOOL)fgBold
                    AtX:(double)X
@@ -6805,6 +6807,8 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
 {
     screen_char_t temp = screenChar;
     temp.foregroundColor = fgColor;
+    temp.fgGreen = fgGreen;
+    temp.fgBlue = fgBlue;
     temp.foregroundColorMode = fgColorMode;
     temp.bold = fgBold;
     NSMutableArray *runs = [NSMutableArray arrayWithCapacity:kMaxParts];
@@ -6832,18 +6836,12 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
         if (overrideColor) {
             [overrideColor set];
         } else {
-            if (screenChar.foregroundColorMode != ColorMode24bit) {
-                [[self colorForCode:fgColor
-                              green:0
-                               blue:0
-                          colorMode:ColorModeAlternate
-                               bold:fgBold
-                       isBackground:NO] set];
-            } else {
-                [[self colorFromRGB:screenChar.foregroundColor
-                              green:screenChar.fgGreen
-                               blue:screenChar.fgBlue] set];
-            }
+            [[self colorForCode:fgColor
+                          green:fgGreen
+                           blue:fgBlue
+                      colorMode:ColorModeAlternate
+                           bold:fgBold
+                   isBackground:NO] set];
         }
 
         NSRectFill(NSMakeRect(X,
@@ -7289,6 +7287,8 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                         if (colorInvertedCursor && !frameOnly) {
                             // Pick background color for text if is key window, otherwise use fg color for text.
                             int fgColor;
+                            int fgGreen;
+                            int fgBlue;
                             ColorMode fgColorMode;
                             BOOL fgBold;
                             BOOL isBold;
@@ -7297,12 +7297,16 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                                 // Draw a character in background color when
                                 // window is key.
                                 fgColor = screenChar.backgroundColor;
+                                fgGreen = screenChar.bgGreen;
+                                fgBlue = screenChar.bgBlue;
                                 fgColorMode = screenChar.backgroundColorMode;
                                 fgBold = NO;
                             } else {
                                 // Draw character in foreground color when there
                                 // is just a frame around it.
                                 fgColor = screenChar.foregroundColor;
+                                fgGreen = screenChar.fgGreen;
+                                fgBlue = screenChar.fgBlue;
                                 fgColorMode = screenChar.foregroundColorMode;
                                 fgBold = screenChar.bold;
                             }
@@ -7310,8 +7314,8 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
 
                             // Ensure text has enough contrast by making it black/white if the char's color would be close to the cursor bg.
                             NSColor* proposedForeground = [[self colorForCode:fgColor
-                                                                        green:0
-                                                                         blue:0
+                                                                        green:fgGreen
+                                                                         blue:fgBlue
                                                                     colorMode:fgColorMode
                                                                          bold:fgBold
                                                                  isBackground:NO] colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
@@ -7331,6 +7335,8 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                             useBrightBold = NO;
                             [self _drawCharacter:screenChar
                                          fgColor:fgColor
+                                         fgGreen:fgGreen
+                                          fgBlue:fgBlue
                                      fgColorMode:fgColorMode
                                           fgBold:isBold
                                              AtX:x1 * charWidth + MARGIN
@@ -7341,20 +7347,28 @@ static void PTYShowGlyphsAtPositions(CTFontRef runFont, const CGGlyph *glyphs, N
                         } else {
                             // Non-inverted cursor or cursor is frame
                             int theColor;
+                            int theGreen;
+                            int theBlue;
                             NSColor* overrideColor = nil;
                             ColorMode theMode;
                             BOOL isBold;
                             if ([[self window] isKeyWindow]) {
                                 theColor = ALTSEM_CURSOR;
+                                theGreen = 0;
+                                theBlue = 0;
                                 theMode = ColorModeAlternate;
                             } else {
                                 theColor = screenChar.foregroundColor;
+                                theGreen = screenChar.fgGreen;
+                                theBlue = screenChar.fgBlue;
                                 theMode = screenChar.foregroundColorMode;
                             }
                             isBold = screenChar.bold;
 
                             [self _drawCharacter:screenChar
                                          fgColor:theColor
+                                         fgGreen:theGreen
+                                          fgBlue:theBlue
                                      fgColorMode:theMode
                                           fgBold:isBold
                                              AtX:x1 * charWidth + MARGIN
