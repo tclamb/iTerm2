@@ -899,9 +899,9 @@ static CGFloat PerceivedBrightness(CGFloat r, CGFloat g, CGFloat b) {
 {
     // approximating 24-bit color with 18-bit color
     // see ScreenChar.h for packing
-    return [NSColor colorWithCalibratedRed:(sct.foregroundColor >> 2)/63.0
-                                     green:(((sct.foregroundColor & 0x3) << 4) | sct.fgGreen)/63.0
-                                      blue:sct.fgBlue/63.0
+    return [NSColor colorWithCalibratedRed:(red >> 2)/63.0
+                                     green:(((red & 0x3) << 4) | green)/63.0
+                                      blue:blue/63.0
                                      alpha:1];
 }
 
